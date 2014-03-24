@@ -6,6 +6,8 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.milkbowl.vault.permission.Permission;
+
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -51,6 +53,8 @@ public final class Minequery extends JavaPlugin {
 	 * The main Minequery server.
 	 */
 	private QueryServer server;
+	
+	private Permissions p;
 
 	/**
 	 * Creates a new <code>Minequery</code> object.
@@ -101,7 +105,10 @@ public final class Minequery extends JavaPlugin {
 		if (server == null) {
 			throw new IllegalStateException("Cannot enable - Minequery not initialized");
 		}
-
+		
+		p = new Permissions(this);
+		p.setupPermissions();
+		
 		// Start the server normally.
 		server.start();
 	}
@@ -131,6 +138,11 @@ public final class Minequery extends JavaPlugin {
 	 */
 	public int getMaxPlayers() {
 		return maxPlayers;
+	}
+	
+	public Permission getPermissions()
+	{
+		return p.getPermissions();
 	}
 
 }

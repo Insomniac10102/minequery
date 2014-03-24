@@ -128,6 +128,27 @@ public final class Request extends Thread {
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 			out.writeBytes(resp.toString());
 		}
+		
+		if(request.startsWith("QUERY_RANKS:"))
+		{
+			StringBuilder response = new StringBuilder();
+			
+			String[] groups = this.minequery.getPermissions().getPlayerGroups(request.substring(request.indexOf(":")),"");
+			
+			response.append("[");
+			
+			for(int i = 0; i < groups.length; i++)
+			{
+				response.append(groups[i]);
+				if(i < groups.length-1)
+					response.append(", ");
+			}
+			
+			response.append("]");
+			
+			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+			out.writeBytes(response.toString());
+		}
 
 		// Different requests may be introduced in the future.
 	}
