@@ -8,6 +8,9 @@ import java.util.logging.Logger;
 
 import net.milkbowl.vault.permission.Permission;
 
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -55,6 +58,8 @@ public final class Minequery extends JavaPlugin {
 	private QueryServer server;
 	
 	private Permissions p;
+	
+	private boolean debug = true;
 
 	/**
 	 * Creates a new <code>Minequery</code> object.
@@ -77,8 +82,35 @@ public final class Minequery extends JavaPlugin {
 
 			server = new QueryServer(this, serverIP, port);
 		} catch (IOException ex) {
-			log.log(Level.SEVERE, "Error initializing Minequery", ex);
+			if(isDebugging())
+				log.log(Level.SEVERE, "Error initializing Minequery", ex);
 		}
+	}
+	
+	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
+	{
+		if(p.has(sender, cmd, true))
+		{
+			if(cmd.getName().equalsIgnoreCase("minequery"))
+			{
+				if(args.length > 0)
+				{
+					if(args[0].equalsIgnoreCase("toggledebug"))
+					{					
+						debug = !debug; //Change debug to opposite value.
+						
+						if(sender instanceof Player)
+							sender.sendMessage("Debug set to " + debug);
+						else
+							log.info("Debug set to " + debug);
+						
+						return true;
+					}
+				}
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/*
@@ -91,7 +123,8 @@ public final class Minequery extends JavaPlugin {
 		try {
 			server.getListener().close();
 		} catch (IOException ex) {
-			log.log(Level.WARNING, "Unable to close the Minequery listener", ex);
+			if(isDebugging())
+				log.log(Level.WARNING, "Unable to close the Minequery listener", ex);
 		}
 	}
 
@@ -103,7 +136,9 @@ public final class Minequery extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		if (server == null) {
-			throw new IllegalStateException("Cannot enable - Minequery not initialized");
+			if(isDebugging())
+				this.log.severe("Couldn't load Minequery -- Disabling plugin");
+			this.getServer().getPluginManager().disablePlugin(this);
 		}
 		
 		p = new Permissions(this);
@@ -143,6 +178,11 @@ public final class Minequery extends JavaPlugin {
 	public Permission getPermissions()
 	{
 		return p.getPermissions();
+	}
+	
+	public boolean isDebugging()
+	{
+		return debug;
 	}
 
 }

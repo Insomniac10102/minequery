@@ -1,0 +1,9 @@
+name: Minequery
+main: net.minestatus.minequery.Minequery
+version: 1.5
+commands:
+  minequery:
+    description: main command for custom minequery
+    usage: |
+
+      /minequery toggledebug

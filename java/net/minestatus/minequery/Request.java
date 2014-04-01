@@ -55,12 +55,14 @@ public final class Request extends Thread {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
 			// Read the request and handle it.
-			handleRequest(socket, reader.readLine());
+			String line = reader.readLine();
+			handleRequest(socket, line);
 
 			// Finally close the socket.
 			socket.close();
 		} catch (IOException ex) {
-			log.log(Level.SEVERE, "Minequery server thread shutting down", ex);
+			if(minequery.isDebugging())
+				log.log(Level.WARNING, "There was an error while handling a request");
 		}
 	}
 
@@ -73,6 +75,7 @@ public final class Request extends Thread {
 	 *             If an I/O error occurs
 	 */
 	private void handleRequest(Socket socket, String request) throws IOException {
+		
 		// Handle a query request.
 		if (request == null) {
 			return;
@@ -133,18 +136,39 @@ public final class Request extends Thread {
 		{
 			StringBuilder response = new StringBuilder();
 			
-			String[] groups = this.minequery.getPermissions().getPlayerGroups(request.substring(request.indexOf(":")),"");
+			String player = request.substring(request.indexOf(":")+1);
 			
+			String[] allGroups = this.minequery.getPermissions().getPlayerGroups("", player);
+			String[] others = new String[allGroups.length-1];
+			String primary = minequery.getPermissions().getPrimaryGroup("", player);
+			
+			int groupIndex = 0;
+			for(String g : allGroups)
+			{
+				if(!g.equals(primary))
+				{
+					others[groupIndex]=g;
+					groupIndex++;
+				}
+			}
+				
+			
+			response.append("{");
+			response.append("\"primary\":").append("\""+primary+"\"").append(",");
+			response.append("\"others\":");
 			response.append("[");
 			
-			for(int i = 0; i < groups.length; i++)
-			{
-				response.append(groups[i]);
-				if(i < groups.length-1)
-					response.append(", ");
+			// Iterate through groups.
+			int count = 0;
+			for (String g : others) {
+				response.append("\"" + g + "\"");
+				if (++count < others.length) {
+					response.append(",");
+				}
 			}
 			
 			response.append("]");
+			response.append("}\n");
 			
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 			out.writeBytes(response.toString());
