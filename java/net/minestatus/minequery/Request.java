@@ -80,6 +80,9 @@ public final class Request extends Thread {
 		if (request == null) {
 			return;
 		}
+		
+		if(minequery.isDebugging())
+			log.info("Request received: " + request);
 
 		// Handle a standard Minequery request.
 		if (request.equalsIgnoreCase("QUERY")) {

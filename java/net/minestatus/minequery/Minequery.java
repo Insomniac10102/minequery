@@ -64,7 +64,13 @@ public final class Minequery extends JavaPlugin {
 	/**
 	 * Creates a new <code>Minequery</code> object.
 	 */
-	public Minequery() {
+	public Minequery()
+	{
+		init();
+	}
+	
+	public void init()
+	{
 		// Initialize the Minequery plugin.
 		try {
 			Properties props = new Properties();
@@ -87,13 +93,50 @@ public final class Minequery extends JavaPlugin {
 		}
 	}
 	
+	public void reload()
+	{
+		try {
+			server.getListener().close();
+			server = new QueryServer(this, serverIP, port);
+			server.start();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
 	{
 		if(p.has(sender, cmd, true))
 		{
 			if(cmd.getName().equalsIgnoreCase("minequery"))
 			{
-				if(args.length > 0)
+				if(args.length > 1)
+				{
+					if(args[0].equalsIgnoreCase("port"))
+					{					
+						try
+						{
+							port = Integer.parseInt(args[1]);
+						}
+						catch(Exception e)
+						{
+							if(sender instanceof Player)
+								sender.sendMessage("Invalid port received.");
+							else
+								log.info("Invalid port received.");
+							
+							return true;
+						}
+						
+						if(sender instanceof Player)
+							sender.sendMessage("Minequery port set to " + port + ". Reload required for changes to take effect.");
+						else
+							log.info("Minequery port set to " + port + ". Reload required for changes to take effect.");
+						
+						return true;
+					}	
+				}
+				else if(args.length > 0)
 				{
 					if(args[0].equalsIgnoreCase("toggledebug"))
 					{					
@@ -106,6 +149,35 @@ public final class Minequery extends JavaPlugin {
 						
 						return true;
 					}
+					if(args[0].equalsIgnoreCase("port"))
+					{					
+						
+						if(sender instanceof Player)
+							sender.sendMessage("Minequery is listening on port " + port);
+						else
+							log.info("Minequery is listening on port " + port);
+						
+						return true;
+					}
+					if(args[0].equalsIgnoreCase("reload"))
+					{					
+						
+						if(sender instanceof Player)
+						{
+							sender.sendMessage("Reloading Minequery...");
+							this.reload();
+							sender.sendMessage("Done reloading!");
+						}
+						else
+						{
+							log.info("Reloading Minequery...");
+							this.reload();
+							log.info("Done reloading!");
+						}
+						
+						return true;
+					}
+					
 				}
 				return false;
 			}

@@ -5,5 +5,6 @@ commands:
   minequery:
     description: main command for custom minequery
     usage: |
-
       /minequery toggledebug
+      /minequery port [port]
+      /minequery reload
